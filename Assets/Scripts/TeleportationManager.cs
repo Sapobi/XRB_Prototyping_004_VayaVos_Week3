@@ -1,3 +1,4 @@
+using Oculus.Interaction;
 using UnityEngine;
 
 public class TeleportationManager : MonoBehaviour
@@ -10,11 +11,13 @@ public class TeleportationManager : MonoBehaviour
 	[SerializeField] private float maxRayCastDistance = Mathf.Infinity;
 	[SerializeField] private LayerMask teleportLayerMask;
 	[SerializeField] private GameObject teleportPreview;
+	[SerializeField] private AudioTrigger audioTrigger;
+	[SerializeField] private AudioSource teleportSound;
 
 	[SerializeField] private float teleportConfirmationTime;
 
 	private bool _aiming, _preTeleporting;
-	private GameObject _teleportLocation;
+	private GameObject _teleportLocation, _oldTeleportLocation;
 
 	private void Update()
 	{
@@ -40,11 +43,17 @@ public class TeleportationManager : MonoBehaviour
 		_teleportLocation = hit.transform.gameObject;
 		teleportPreview.SetActive(true);
 		teleportPreview.transform.position = hit.transform.position;
+
+		if (_teleportLocation == _oldTeleportLocation) return;
+		
+		_oldTeleportLocation = _teleportLocation;
+		audioTrigger.PlayAudio();
 	}
 
 	private void DisablePreview()
 	{
 		_teleportLocation = null;
+		_oldTeleportLocation = null;
 		teleportPreview.SetActive(false);
 	}
 
@@ -70,6 +79,7 @@ public class TeleportationManager : MonoBehaviour
 		if (!_aiming || _teleportLocation == null) return;
 
 		rig.transform.position = _teleportLocation.transform.position;
+		teleportSound.Play();
 		StopAiming();
 	}
 }
